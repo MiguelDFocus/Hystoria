@@ -96,6 +96,9 @@ class PostGenerator:
     def get_posts_summary(self) -> str:
         posts_summary = []
         for filename in os.listdir(settings.CONTENT_DIR_PATH)[-10:]:
+            if not filename.endswith('.md'):
+                continue
+
             with open(f'{settings.CONTENT_DIR_PATH}/{filename}') as file:
                 content = file.read()
                 conclusion = re.search(r'(?si)### Conclusión\s*(.*)$', content).group(1)
