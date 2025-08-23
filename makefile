@@ -1,20 +1,14 @@
-local_setup:
-	@echo "Setting up local environment"
-	./setup.sh
+# Variables
+PYTHON = python3
+PELICANCONF = pelicanconf.py
+OUTPUTDIR = output
 
-create_post:
-	python post_generator.py
+# Default pelican build
+PELICAN = pelican
+PELICANOPTS =
 
-update_content:
-	pelican content -s local_pelicanconf.py
-
-run:
-	pelican --listen -s local_pelicanconf.py
-
-# Production commands
-.PHONY: install generate build serve clean
-
-PYTHON=python3
+# Targets
+.PHONY: install generate build serve clean preview
 
 install:
 	$(PYTHON) -m pip install -U pip
@@ -26,11 +20,15 @@ generate:
 
 # Build static site into ./output using Pelican
 build:
-	pelican content -o output -s pelicanconf.py
+	$(PELICAN) content -o $(OUTPUTDIR) -s $(PELICANCONF) $(PELICANOPTS)
 
 # Quick local preview: http://localhost:8000
-serve:
-	pelican --listen --autoreload -s pelicanconf.py
+serve: build
+	cd $(OUTPUTDIR) && python3 -m http.server 8000
 
+# Clean output dir
 clean:
-	rm -rf output
+	rm -rf $(OUTPUTDIR)
+
+# Shortcut: build + serve (dev mode)
+preview: clean build serve
