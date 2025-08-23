@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+if os.getenv("GITHUB_ACTIONS") != "true":
+    load_dotenv()
 
 OPENAI_CONFIG = {
     'api_key': os.getenv('OPENAI_API_KEY')
