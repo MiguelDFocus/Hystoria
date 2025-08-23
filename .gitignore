@@ -1,6 +1,10 @@
 .env
-content/
-output/
 __pycache__
 venv
+
+content/
+output/
+
 writen_topics.csv
+setup.sh
+local_pelicanconf.py
