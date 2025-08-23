@@ -17,6 +17,7 @@ CONTENT_DIR_PATH = 'content'
 WRITEN_TOPICS_FILE_PATH = 'writen_topics.csv'
 
 if os.getenv("GITHUB_ACTIONS") != "true":
+    print('HELLO')
     load_dotenv()
     REPOSITORY_NAME = 'AIHistorianBlogger'
     WORKDIR = f'/home/runner/work/{REPOSITORY_NAME}/{REPOSITORY_NAME}'
