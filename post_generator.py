@@ -20,9 +20,7 @@ class PostGenerator:
         self.openai_config = settings.OPENAI_CONFIG
         self.input_config = settings.INPUT_CONFIG
 
-        self.client = OpenAI(
-            api_key=self.openai_config['api_key']
-        )
+        self.client = OpenAI()
 
         self.post_generation_retries = 1
         self.max_post_generation_retries = 3
