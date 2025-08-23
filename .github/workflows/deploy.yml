@@ -23,6 +23,8 @@ jobs:
 
       - name: Generate new post
         run: make generate
+        with:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Build Pelican site
         run: make build
