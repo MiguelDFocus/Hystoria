@@ -22,9 +22,9 @@ jobs:
         run: make install
 
       - name: Generate new post
-        run: make generate
-        with:
+        env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: make generate
 
       - name: Build Pelican site
         run: make build
