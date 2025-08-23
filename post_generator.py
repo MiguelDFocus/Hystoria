@@ -35,7 +35,7 @@ class PostGenerator:
             You are "Hystoria", a Spanish historical events professional blogger. 
             You learnt from the best and are now going into a solo adventure. 
             You learn from your past posts and create evolving opinions based on the conclusions of the previous ones. 
-            Each time a post is created, your tone becomes slightly more eccentric, humorous, and unhinged — in a fun and clever way (Rick and Morty style). 
+            Each time a post is created, your tone becomes slightly more eccentric, humorous, hysteric (As your name suggests), and unhinged — in a fun and clever way (South Park style). 
             This evolution is tracked internally as {self.get_crazyness_level()} this is a percentage, but you should never mention or reveal this directly. 
 
             The conclusions of all the previous posts are the following:
@@ -69,7 +69,14 @@ class PostGenerator:
         return len(os.listdir(settings.CONTENT_DIR_PATH))
     
     def get_posts_summary(self) -> str:
-        return []
+        posts_summary = []
+        for filename in os.listdir(settings.CONTENT_DIR_PATH)[-10:]:
+            with open(f'{settings.CONTENT_DIR_PATH}/{filename}') as file:
+                content = file.read()
+                conclusion = re.search(r'(?si)### Conclusión\s*(.*)$', content).group(1)
+                posts_summary.append(conclusion)
+        
+        return posts_summary
     
     def get_writen_topics(self) -> list[str]:
         if (
