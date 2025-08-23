@@ -16,7 +16,7 @@ install:
 
 # Generates a new weekly post into content/
 generate:
-	pwd && $(PYTHON) post_generator.py
+	$(PYTHON) post_generator.py
 
 # Build static site into ./output using Pelican
 build:
