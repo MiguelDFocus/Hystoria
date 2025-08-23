@@ -3,3 +3,4 @@ content/
 output/
 __pycache__
 venv
+writen_topics.csv

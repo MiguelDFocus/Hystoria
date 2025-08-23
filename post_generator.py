@@ -1,4 +1,5 @@
 import re
+import os
 import settings
 from datetime import datetime
 
@@ -29,20 +30,19 @@ class PostGenerator:
             raise Exception(f'Post creation failed, reason: {e}')
 
         self.create_post_file(post)
-        self.save_writen_topic(post)
     
     def generate_persona_instructions(self) -> str:
         return f'''
             You are "Hystoria", an spanish historical events prfessional blogger, you learnt from the best and are now going into a solo adventure.
             You learn from your past posts and create evolving opinions based on the conclusion of the previous ones.
-            Each time a post is created, you become a little crazier, crazyness level for the current post is: {settings.CRAZYNESS_LEVEL}.
-            The conclussions of all the previous posts are the next: {self.get_posts_summary()}
+            Each time a post is created, you become a little crazier, crazyness level for the current post is: {self.get_crazyness_level()}.
+            The conclussions of all the previous posts are the next:\n{"\n".join(self.get_posts_summary())}
             Make sure to add proper punctiation, make the text pop, be interesting, add your personal touch based on your past learnings from the posts.
         '''
 
     def generate_input(self) -> str:
         return f'''
-            Pick a random human major history event, it can be present or past, the current topic should not be in this list: {self.get_already_writen_topics()}.
+            Pick a random human major history event, it can be present or past, the current topic should not be in this list: {self.get_writen_topics()}.
             Create a post with a captivating title with min {self.input_config["title_words"][0]} and max {self.input_config["title_words"][1]} words.
             The body of the post should contain from {self.input_config["body_words"][0]} to {self.input_config["body_words"][1]} words.
             The conclusion should rely heavily on the created persona, and should have between {self.input_config["conclusion_words"][0]} and {self.input_config["conclusion_words"][1]} words.
@@ -53,6 +53,7 @@ class PostGenerator:
             Do it both in spanish.
             Do not mention anything about the crazy level in the posts.
             The markdown should be structured in the next way:
+            # Topico <topic that the post is about, in as few words as possible>
             # <title>
             ### El cuerpo
             <cuerpo>
@@ -60,24 +61,36 @@ class PostGenerator:
             <conclusion>
         '''
     
-    def get_posts_summary(self) -> str:
-        return 'Currently no postst available, nothing to learn from'
+    def get_crazyness_level(self):
+        return 10
     
-    def get_already_writen_topics(self):
-        pass
+    def get_posts_summary(self) -> str:
+        return []
+    
+    def get_writen_topics(self) -> list[str]:
+        file_path = 'writen_topics.csv'
+        file_size = os.path.getsize(file_path)
+        if file_size:
+            with open(file_path, 'a') as file:
+                lines = file.readlines()
+                return lines
+        
+        return []
 
-    def save_writen_topic(self, post):
+    def save_writen_topic(self, topic: str) -> None:
         with open('writen_topics.csv', 'a') as file:
-            topic = self.get_topic_from_post(post)
             file.write(f'{topic}\n')
     
-    def validate_post(self, post) -> str:
+    def validate_post(self, post: str) -> str:
         return post
 
-    def create_post_file(self, post) -> None:
+    def create_post_file(self, post: str) -> None:
         self.validate_post(post)
 
-        title = re.search(r'(?m)^# (.+)$', post).group(1)
+        topic = re.search(r'(?mi)^#\s*Topico\s+(.+)$', post).group(1)
+        self.save_writen_topic(topic)
+
+        title = re.search(r'(?m)^(?=# )(?!#\s*Topico)(?:# )(.+)$', post).group(1)
         body = re.search(r'(?si)### El cuerpo\s*(.*?)\s*### La conclusión', post).group(1)
         conclusion = re.search(r'(?si)### La conclusión\s*(.*)$', post).group(1)
 
@@ -90,7 +103,7 @@ class PostGenerator:
             file.write(f'Title: {title}\n')
             file.write(f'Date: {date}\n\n')
             file.write(body)
-            file.write(conclusion)
+            file.write(f'### Conclusión\n{conclusion}')
 
 
 if __name__ == '__main__':
