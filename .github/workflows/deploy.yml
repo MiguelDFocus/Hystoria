@@ -1,80 +1,57 @@
-name: Generate & Publish Blog
+name: Build and Deploy Blog
 
 on:
-  workflow_dispatch: {}
+  push:
+    branches: [ main ]   # or "master" if that's your default branch
   schedule:
-    # Every Monday at 07:00 UTC (≈ 09:00 Madrid during summer)
-    - cron: "0 7 * * 1"
+    - cron: "0 0 * * 0"  # every Sunday at midnight UTC
 
 permissions:
-  contents: write     # needed to commit the new post
-  pages: write        # needed to deploy to Pages
-  id-token: write     # needed by actions/deploy-pages
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.x"
 
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install deps
-        run: make install
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pelican markdown
 
       - name: Generate weekly post
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: make generate
+        run: python post_generator.py
 
-      - name: Run tests
-        run: make test
+      - name: Build site with Pelican
+        run: make publish
 
-      - name: Commit new content (if any)
-        run: |
-          if [ -n "$(git status --porcelain content)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add content
-            git commit -m "chore(content): weekly post $(date -u +'%Y-%m-%d')"
-            git push
-          else
-            echo "No changes detected in content/"
-          fi
-
-      - name: Build site (Pelican)
-        run: make build
-
-      - name: Upload Pages artifact
+      - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./output
+          path: output
 
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    needs: build
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
