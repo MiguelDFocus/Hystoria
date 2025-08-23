@@ -3,6 +3,15 @@ import os
 import settings
 from datetime import datetime
 
+from exceptions import (
+    PostCreationException,
+    PostValidationException,
+    TitleValidationException,
+    BodyValidationException,
+    ConclusionValidationException,
+    MaxRetriesExceededException
+)
+
 from openai import OpenAI
 
 
@@ -15,7 +24,16 @@ class PostGenerator:
             api_key=self.openai_config['api_key']
         )
 
+        self.post_generation_retries = 1
+        self.max_post_generation_retries = 3
+
+        self.topic_regex = r'(?mi)^#\s*Topico\s+(.+)$'
+        self.title_regex = r'(?m)^(?=# )(?!#\s*Topico)(?:# )(.+)$'
+        self.body_regex = r'(?si)### El cuerpo\s*(.*?)\s*### La conclusión'
+        self.conclusion_regex = r'(?si)### La conclusión\s*(.*)$'
+
     def generate_post(self):
+        print(f'Generating post, try {self.post_generation_retries}')
         response = self.client.responses.create(
             model='gpt-4.1',
             instructions=self.generate_persona_instructions(),
@@ -26,7 +44,16 @@ class PostGenerator:
         try:
             post = response.output[0].content[0].text
         except Exception as e:
-            raise Exception(f'Post creation failed, reason: {e}')
+            raise PostCreationException(f'Post creation failed, reason: {e}')
+        
+        try:
+            self.post_generation_retries += 1
+            self.validate_post(post)
+        except Exception as e:
+            if self.post_generation_retries > self.max_post_generation_retries:
+                raise MaxRetriesExceededException(f'Post failed to be validated after {self.post_generation_retries} tries')
+            print(f'Regenerating post, reason: {e}')
+            self.generate_post()
 
         self.create_post_file(post)
     
@@ -92,18 +119,33 @@ class PostGenerator:
         with open(settings.WRITEN_TOPICS_FILE_PATH, 'a') as file:
             file.write(f'{topic}\n')
     
-    def validate_post(self, post: str) -> str:
-        return post
+    def validate_post(self, post: str) -> None:
+        topic = re.search(self.topic_regex, post).group(1)
+        title = re.search(self.title_regex, post).group(1)
+        body = re.search(self.body_regex, post).group(1)
+        conclusion = re.search(self.conclusion_regex, post).group(1)
+
+        if not topic or not title or not body or not conclusion:
+            raise PostValidationException('Post is missing some crucial part')
+        
+        title_length = len(title.split(' '))
+        body_length = len(body.split(' '))
+        conclusion_length = len(conclusion.split(' '))
+        
+        if title_length < self.input_config['title_words'][0] or title_length > self.input_config['title_words'][1]:
+            raise TitleValidationException(f'Title is outside of max or less length (Actual length: {title_length})')
+        if body_length < self.input_config['body_words'][0] or body_length > self.input_config['body_words'][1]:
+            raise BodyValidationException(f'Body is outside of max or less length (Actual length: {body_length})')
+        if conclusion_length < self.input_config['conclusion_words'][0] or conclusion_length > self.input_config['conclusion_words'][1]:
+            raise ConclusionValidationException(f'Title is outside of max or less length (Actual length: {conclusion_length})')
 
     def create_post_file(self, post: str) -> None:
-        self.validate_post(post)
-
-        topic = re.search(r'(?mi)^#\s*Topico\s+(.+)$', post).group(1)
+        topic = re.search(self.topic_regex, post).group(1)
         self.save_writen_topic(topic)
 
-        title = re.search(r'(?m)^(?=# )(?!#\s*Topico)(?:# )(.+)$', post).group(1)
-        body = re.search(r'(?si)### El cuerpo\s*(.*?)\s*### La conclusión', post).group(1)
-        conclusion = re.search(r'(?si)### La conclusión\s*(.*)$', post).group(1)
+        title = re.search(self.title_regex, post).group(1)
+        body = re.search(self.body_regex, post).group(1)
+        conclusion = re.search(self.conclusion_regex, post).group(1)
 
         current_time = datetime.now()
         timestamp = int(current_time.timestamp())
