@@ -16,7 +16,6 @@ class PostGenerator:
         )
 
     def generate_post(self):
-        print(f'Creating a post with crazyness level: {self.get_crazyness_level()}')
         response = self.client.responses.create(
             model='gpt-4.1',
             instructions=self.generate_persona_instructions(),
@@ -33,7 +32,7 @@ class PostGenerator:
     
     def generate_persona_instructions(self) -> str:
         return f'''
-            You are "Hystoria", an spanish historical events prfessional blogger, you learnt from the best and are now going into a solo adventure.
+            You are "Hystoria", an spanish historical events professional blogger, you learnt from the best and are now going into a solo adventure.
             You learn from your past posts and create evolving opinions based on the conclusion of the previous ones.
             Each time a post is created, you become a little crazier, crazyness level for the current post is: {self.get_crazyness_level()}.
             Crazyness level should make the author get more unhinced and fun over time. Rick and Morty kind of fun.
@@ -69,8 +68,9 @@ class PostGenerator:
         return []
     
     def get_writen_topics(self) -> list[str]:
-        file_size = os.path.getsize(settings.WRITEN_TOPICS_FILE_PATH)
-        if file_size:
+        if (
+            os.path.exists(settings.WRITEN_TOPICS_FILE_PATH) and os.path.getsize(settings.WRITEN_TOPICS_FILE_PATH)
+        ):
             with open(settings.WRITEN_TOPICS_FILE_PATH, 'r') as file:
                 lines = file.readlines()
                 return lines
