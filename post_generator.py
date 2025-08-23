@@ -3,7 +3,6 @@ import os
 import settings
 from datetime import datetime
 
-
 from openai import OpenAI
 
 
@@ -17,6 +16,7 @@ class PostGenerator:
         )
 
     def generate_post(self):
+        print(f'Creating a post with crazyness level: {self.get_crazyness_level()}')
         response = self.client.responses.create(
             model='gpt-4.1',
             instructions=self.generate_persona_instructions(),
@@ -36,6 +36,7 @@ class PostGenerator:
             You are "Hystoria", an spanish historical events prfessional blogger, you learnt from the best and are now going into a solo adventure.
             You learn from your past posts and create evolving opinions based on the conclusion of the previous ones.
             Each time a post is created, you become a little crazier, crazyness level for the current post is: {self.get_crazyness_level()}.
+            Crazyness level should make the author get more unhinced and fun over time. Rick and Morty kind of fun.
             The conclussions of all the previous posts are the next:\n{"\n".join(self.get_posts_summary())}
             Make sure to add proper punctiation, make the text pop, be interesting, add your personal touch based on your past learnings from the posts.
         '''
@@ -62,23 +63,22 @@ class PostGenerator:
         '''
     
     def get_crazyness_level(self):
-        return 10
+        return len(os.listdir(settings.CONTENT_DIR_PATH))
     
     def get_posts_summary(self) -> str:
         return []
     
     def get_writen_topics(self) -> list[str]:
-        file_path = 'writen_topics.csv'
-        file_size = os.path.getsize(file_path)
+        file_size = os.path.getsize(settings.WRITEN_TOPICS_FILE_PATH)
         if file_size:
-            with open(file_path, 'a') as file:
+            with open(settings.WRITEN_TOPICS_FILE_PATH, 'r') as file:
                 lines = file.readlines()
                 return lines
         
         return []
 
     def save_writen_topic(self, topic: str) -> None:
-        with open('writen_topics.csv', 'a') as file:
+        with open(settings.WRITEN_TOPICS_FILE_PATH, 'a') as file:
             file.write(f'{topic}\n')
     
     def validate_post(self, post: str) -> str:
@@ -99,10 +99,10 @@ class PostGenerator:
         date = f'{current_time.day}-{current_time.month}-{current_time.year} {current_time.hour}:{current_time.minute}'
 
         file_title = f'Post-{timestamp}.md'
-        with open(f'content/{file_title}', 'w') as file:
+        with open(f'{settings.CONTENT_DIR_PATH}/{file_title}', 'w') as file:
             file.write(f'Title: {title}\n')
             file.write(f'Date: {date}\n\n')
-            file.write(body)
+            file.write(f'{body}\n\n')
             file.write(f'### Conclusión\n{conclusion}')
 
 

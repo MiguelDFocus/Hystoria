@@ -14,3 +14,6 @@ INPUT_CONFIG = {
 }
 
 CRAZYNESS_LEVEL = 0
+
+CONTENT_DIR_PATH = 'content'
+WRITEN_TOPICS_FILE_PATH = 'writen_topics.csv'
