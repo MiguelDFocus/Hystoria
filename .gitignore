@@ -2,7 +2,6 @@
 __pycache__
 venv
 
-content/*
 output/
 
 writen_topics.csv
