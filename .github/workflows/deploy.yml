@@ -35,6 +35,9 @@ jobs:
           git add content/
           git commit -m "chore: add new post [skip ci]" || echo "No changes to commit"
           git push
+      
+      - name: Load content
+        run: pelican content
 
   deploy:
     needs: generate-post
