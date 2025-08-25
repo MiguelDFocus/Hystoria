@@ -2,10 +2,14 @@ name: Deploy
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy'
+        required: true
+        default: 'latest'
 
-jobs:  
+jobs:
   deploy:
-    needs: generate-post
     uses: "getpelican/pelican/.github/workflows/github_pages.yml@main"
     permissions:
       id-token: write
@@ -14,6 +18,4 @@ jobs:
     with:
       settings: "publishconf.py"
       requirements: "-r requirements.txt"
-      deploy: ${{ github.event_name == 'workflow_dispatch' 
-        || (github.event_name == 'push' && github.ref == 'refs/heads/main') 
-        || github.event_name == 'schedule' }}
+      deploy: true
