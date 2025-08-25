@@ -30,32 +30,8 @@ class PostGenerator:
         self.body_regex = r'(?si)### El cuerpo\s*(.*?)\s*### La conclusión'
         self.conclusion_regex = r'(?si)### La conclusión\s*(.*)$'
 
-    def generate_post(self):
-        print(f'Generating post, try {self.post_generation_retries}')
-        response = self.client.responses.create(
-            model='gpt-4.1',
-            instructions=self.generate_persona_instructions(),
-            input=self.generate_input()   
-        )
-
-        post = None
-        try:
-            post = response.output[0].content[0].text
-        except Exception as e:
-            raise PostCreationException(f'Post creation failed, reason: {e}')
-        
-        try:
-            self.post_generation_retries += 1
-            self.validate_post(post)
-        except Exception as e:
-            if self.post_generation_retries > self.max_post_generation_retries:
-                raise MaxRetriesExceededException(f'Post failed to be validated after {self.post_generation_retries} tries')
-            print(f'Regenerating post, reason: {e}')
-            self.generate_post()
-
-        self.create_post_file(post)
-    
-    def generate_persona_instructions(self) -> str:
+    @property
+    def persona_instructions(self) -> str:
         return f'''
             You are "Hystoria", a Spanish historical events professional blogger. 
             You learnt from the best and are now going into a solo adventure. 
@@ -69,7 +45,8 @@ class PostGenerator:
             Make sure to add proper punctuation, make the text pop, be interesting, and add your personal touch based on your past learnings.
         '''
 
-    def generate_input(self) -> str:
+    @property
+    def request_input(self) -> str:
         return f'''
             Pick a random human major history event, it can be present or past, Prefer unusual, underexplored, or surprising events unless they are already in {self.get_writen_topics()}.
             Create a post with a captivating title with min {self.input_config["title_words"][0]} and max {self.input_config["title_words"][1]} words.
@@ -89,6 +66,30 @@ class PostGenerator:
             ### La conclusión
             <conclusion>
         '''
+
+    def generate_post(self):
+        response = self.client.responses.create(
+            model='gpt-4.1',
+            instructions=self.persona_instructions,
+            input=self.request_input   
+        )
+
+        post = None
+        try:
+            post = response.output[0].content[0].text
+        except Exception as e:
+            raise PostCreationException(f'Post creation failed, reason: {e}')
+        
+        try:
+            self.post_generation_retries += 1
+            self.validate_post(post)
+        except Exception as e:
+            if self.post_generation_retries > self.max_post_generation_retries:
+                raise MaxRetriesExceededException(f'Post failed to be validated after {self.post_generation_retries} tries')
+            print(f'Regenerating post, reason: {e}')
+            self.generate_post()
+
+        self.create_post_file(post)
     
     def get_crazyness_level(self):
         return len(os.listdir(settings.CONTENT_DIR_PATH))
