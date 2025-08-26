@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} - {{ SITENAME }}{% endblock %}
+
+{% block content %}
+<article class="article-full page-content">
+    <header class="article-header">
+        <h1 class="article-title">{{ page.title }}</h1>
+        {% if page.date %}
+            <div class="article-meta">
+                <time class="article-date" datetime="{{ page.date.isoformat() }}">
+                    {{ page.locale_date }}
+                </time>
+                {% if page.modified %}
+                    <time class="article-modified" datetime="{{ page.modified.isoformat() }}">
+                        (Actualizado el {{ page.modified.strftime('%d de %B de %Y') }})
+                    </time>
+                {% endif %}
+            </div>
+        {% endif %}
+    </header>
+
+    <div class="article-content">
+        {{ page.content }}
+    </div>
+
+    <footer class="article-footer">
+        <div class="back-to-home">
+            <a href="{{ SITEURL }}/" class="btn-home">← Volver al inicio</a>
+        </div>
+    </footer>
+</article>
+{% endblock content %}

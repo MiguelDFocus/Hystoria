@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h2>Bienvenido a {{ SITENAME }}</h2>
+        <p class="hero-subtitle">Descubre la historia a través de los ojos de la inteligencia artificial</p>
+    </div>
+</section>
+
+<section class="articles-list">
+    {% if articles %}
+        {% for article in articles_page.object_list %}
+            <article class="article-preview">
+                <header class="article-header">
+                    <h2 class="article-title">
+                        <a href="{{ SITEURL }}/{{ article.url }}">{{ article.title }}</a>
+                    </h2>
+                    <div class="article-meta">
+                        <time class="article-date" datetime="{{ article.date.isoformat() }}">
+                            {{ article.locale_date }}
+                        </time>
+                        {% if article.category %}
+                            <span class="article-category">{{ article.category }}</span>
+                        {% endif %}
+                        {% if article.tags %}
+                            <div class="article-tags">
+                                {% for tag in article.tags %}
+                                    <span class="tag">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </header>
+                <div class="article-summary">
+                    {% if article.summary %}
+                        {{ article.summary }}
+                    {% else %}
+                        {{ article.content[:300] }}...
+                    {% endif %}
+                </div>
+                <footer class="article-footer">
+                    <a href="{{ SITEURL }}/{{ article.url }}" class="read-more">Leer más</a>
+                </footer>
+            </article>
+        {% endfor %}
+    {% else %}
+        <p class="no-articles">No hay artículos disponibles.</p>
+    {% endif %}
+</section>
+
+{% if articles_page.has_other_pages() %}
+<nav class="pagination">
+    {% if articles_page.has_previous() %}
+        <a href="{{ SITEURL }}/{{ articles_previous_page.url }}" class="pagination-prev">← Anterior</a>
+    {% endif %}
+    
+    <span class="pagination-info">
+        Página {{ articles_page.number }} de {{ articles_paginator.num_pages }}
+    </span>
+    
+    {% if articles_page.has_next() %}
+        <a href="{{ SITEURL }}/{{ articles_next_page.url }}" class="pagination-next">Siguiente →</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endblock content %}

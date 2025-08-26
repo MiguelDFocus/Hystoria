@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Archivo - {{ SITENAME }}{% endblock %}
+
+{% block content %}
+<section class="archive-section">
+    <header class="archive-header">
+        <h1>Archivo de Artículos</h1>
+        <p class="archive-subtitle">Todos los artículos de {{ SITENAME }}</p>
+    </header>
+
+    <div class="articles-list">
+        {% for article in dates %}
+            <article class="article-preview">
+                <header class="article-header">
+                    <h2 class="article-title">
+                        <a href="{{ SITEURL }}/{{ article.url }}">{{ article.title }}</a>
+                    </h2>
+                    <div class="article-meta">
+                        <time class="article-date" datetime="{{ article.date.isoformat() }}">
+                            {{ article.locale_date }}
+                        </time>
+                        {% if article.category %}
+                            <span class="article-category">{{ article.category }}</span>
+                        {% endif %}
+                        {% if article.tags %}
+                            <div class="article-tags">
+                                {% for tag in article.tags %}
+                                    <span class="tag">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </header>
+                <div class="article-summary">
+                    {% if article.summary %}
+                        {{ article.summary }}
+                    {% else %}
+                        {{ article.content[:300] }}...
+                    {% endif %}
+                </div>
+                <footer class="article-footer">
+                    <a href="{{ SITEURL }}/{{ article.url }}" class="read-more">Leer más</a>
+                </footer>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock content %}

@@ -151,7 +151,7 @@ class PostGenerator:
 
         current_time = datetime.now()
         timestamp = int(current_time.timestamp())
-        date = f'{current_time.day}-{current_time.month}-{current_time.year} {current_time.hour}:{current_time.minute}'
+        date = current_time.strftime('%d-%m-%Y %H:%M')
 
         file_title = f'Post-{timestamp}.md'
         with open(f'{settings.CONTENT_DIR_PATH}/{file_title}', 'w') as file:
