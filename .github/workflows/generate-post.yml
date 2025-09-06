@@ -23,7 +23,7 @@ jobs:
       - name: Generate new post
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: echo $(pwd) && python post_generator.py
+        run: python post_generator.py
 
       # Commit changes (new post) back to repo
       - name: Commit new post
