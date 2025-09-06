@@ -1,6 +1,10 @@
 name: Deploy
 
 on:
+  workflow_run:
+    workflows: ["Generate Post"]  # Triggers after post generation completes
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
       version:
@@ -10,6 +14,8 @@ on:
 
 jobs:
   deploy:
+    # Only run if triggered manually OR if the post generation workflow succeeded
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     uses: "getpelican/pelican/.github/workflows/github_pages.yml@main"
     permissions:
       id-token: write
