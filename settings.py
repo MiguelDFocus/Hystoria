@@ -7,7 +7,7 @@ WRITEN_TOPICS_FILE_PATH = 'writen_topics.csv'
 REPO_NAME = 'Hystoria'
 
 if os.environ.get("GITHUB_ACTIONS"):
-    WORKDIR = f'/home/runner/work/{REPO_NAME}/{REPO_NANE}'
+    WORKDIR = f'/home/runner/work/{REPO_NAME}/{REPO_NAME}'
     CONTENT_DIR_PATH = f'{WORKDIR}/content'
     WRITEN_TOPICS_FILE_PATH = f'{WORKDIR}/writen_topics.csv'
 else:
