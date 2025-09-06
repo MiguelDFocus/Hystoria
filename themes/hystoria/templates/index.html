@@ -10,7 +10,7 @@
 
 <section class="articles-list">
     {% if articles %}
-        {% for article in articles_page.object_list %}
+        {% for article in articles_page.object_list | sort(attribute='date', reverse=true) %}
             <article class="article-preview">
                 <header class="article-header">
                     <h2 class="article-title">
